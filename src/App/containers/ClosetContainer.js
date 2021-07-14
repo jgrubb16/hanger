@@ -2,34 +2,38 @@ import React, { useState, useEffect, useContext } from 'react';
 
 import { BrowserRouter as Router, Route, Link, Switch } from 'react-router-dom';
 import { ClosetContext } from '../Store/ClosetContext';
+import { UserContext } from '../Store/UserContext';
 import NewItem from '../components/NewItem';
 import Closet from '../components/Closet';
-
-//  #region useEffect && fetch() comments
+import { Typography, Box, Button, makeStyles } from '@material-ui/core';
 /*
-  invoke useEffect and make a fetch request to our backend endpoint
-  to retrieve the table data and store it in state. this useEffect
-  should only trigger once (and not each time the page re-renders
-  (a la componentDidMount))
+  ClosetContainer is the top-level component that holds all of
+  the data from a user's closet
 
-  NewItem does not need any props passed down to it
-  pass down the appropriate props to the tableDisplay component
+  We access the UserContext in order to make a fetch request to the backend.
+  We save our response to the global state of ClosetContext
 
-  not sure on this part...
-  create a custom hook (useFetch) to pass down as a prop to NewItem
-  (EDIT: or maybe define in separate file and import)
-  this will allow NewItem to trigger the useEffect hook in here
-  to re-fetch the latest data from the backend, which will then update
-  and re-render the TableDisplay component
-  */
-//#endregion
+  The component passes the data to a single component with optional paths
+  default to closet, but the user is also allowed ot add items into their closet
+*/
+const useStyles = makeStyles((theme) => ({
+  root: {
+    '& > *': {
+      margin: theme.spacing(1),
+      background: '#FF8E53',
+      color: 'white',
+    },
+  },
+}));
 
 const ClosetContainer = () => {
+  const classes = useStyles();
+
+  const [user] = useContext(UserContext);
   const [closet, setCloset] = useContext(ClosetContext);
   const [hasLoaded, setHasLoaded] = useState(false);
-
   useEffect(() => {
-    fetch('/api')
+    fetch(`/api/closet/${user.verified}`)
       .then((response) => response.json())
       .then((data) => {
         setCloset(data);
@@ -41,9 +45,25 @@ const ClosetContainer = () => {
   return hasLoaded ? (
     <div className="content-container">
       <Router>
-        <div className='content-nav'>
-          <Link to="/closet">My Closet</Link>
-          <Link to="/newitem">Add Item</Link>
+        <div className="content-nav">
+          <div className={classes.root}>
+            <Button
+              classes=".MuiButton-containedPrimary"
+              variant="contained"
+              color="inherit"
+            >
+              <Link to="/closet">Show Closet</Link>
+            </Button>
+          </div>
+          <div className={classes.root}>
+            <Button
+              classes=".MuiButton-containedPrimary"
+              variant="contained"
+              color="inherit"
+            >
+              <Link to="/newitem">Add Item</Link>
+            </Button>
+          </div>
         </div>
 
         <Switch>
@@ -51,19 +71,14 @@ const ClosetContainer = () => {
             <NewItem />
           </Route>
           <Route path="/closet">
-            <Closet tableData={closet} />
-          </Route>
-          <Route path="/">
-            <div>
-              <h1>HANGER</h1>
-            </div>
+            <Closet closetData={closet} />
           </Route>
         </Switch>
       </Router>
     </div>
   ) : (
     <div className="content-container">
-      <p>Still loading...</p>
+      <h1>Still loading...</h1>
     </div>
   );
 };

@@ -4,12 +4,13 @@ const closetController = require('../controllers/closetController.js');
 const userController = require('../controllers/userController.js');
 const router = express.Router();
 
-// Jason: created a new GET endpoint to /closet that queries the database
-// for all entries and returns the result to the response
+//
 // should handle getting all items from the database
 
 // CLOSET ROUTES:
-router.get('/', closetController.getClothes, (req, res) => {
+
+// tested and works in postman
+router.get('/closet/:id', closetController.getClothes, (req, res) => {
   res.json(res.locals.clothes);
 });
 
@@ -19,31 +20,41 @@ router.post(
   closetController.newClothingItem,
   closetController.getClothes,
   (req, res) => {
-    console.log(res.locals.clothes);
+    // console.log(res.locals.clothes);
     res.json(res.locals.clothes);
   }
 );
 
-// should delete and update also get clothes??
 //deletes an item from the closet using the id
-router.delete('/', closetController.deleteClothingItem, (req, res) => {
-  res.json(res.locals.clothes);
-});
+router.delete(
+  '/delete/:id',
+  closetController.deleteClothingItem,
+  (req, res) => {
+    // res.json(res.locals.clothes);
+  }
+);
 
-//updates an item from the closet using the id
-router.patch('/', closetController.updateClosetItem, (req, res) => {
+//updates an item
+router.patch('/updateItem', closetController.updateClosetItem, (req, res) => {
   res.send('happy stuff');
 });
 
 // get marketplace items
+// tested and works in postman
 router.get('/marketplace', closetController.getMarketplaceItems, (req, res) => {
   res.json(res.locals.clothes);
 });
 
 // donation status
-router.post('/donation', closetController.donationStatusUpdate, (req, res) => {
-  res.json(res.locals.clothes);
-});
+// tested and works in postman
+router.post(
+  '/closet/donation',
+  closetController.donationStatusUpdate,
+  (req, res) => {
+    // res.json(res.locals.clothes);
+    res.send('donation status updated!');
+  }
+);
 
 // USER ROUTES:
 
@@ -52,8 +63,19 @@ router.post('/signup', userController.addUser, (req, res) => {
   res.send('Account signup success!');
 });
 
+// logs user in
 router.post('/login', userController.userLogin, (req, res) => {
   res.send('Successfully logged in');
 });
 
+// tested and works in postman
+router.get('/user/:id', userController.getUser, (req, res) => {
+  res.json(res.locals.user);
+});
+router.get('/logout', (req, res) => {
+  //this will be handled later with passport
+  req.logout();
+  req.session.destroy();
+  res.redirect('/');
+});
 module.exports = router;
